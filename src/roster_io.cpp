@@ -3,6 +3,19 @@
 #include <fstream>
 #include <sstream>
 
+namespace {
+
+bool read_whole_number(const std::string& text, int& value) {
+    std::istringstream in(text);
+    if (!(in >> value)) {
+        return false;
+    }
+    in >> std::ws;
+    return in.eof();
+}
+
+}  // namespace
+
 bool save_roster(const std::vector<Mech>& roster, const std::string& path) {
     std::ofstream out(path);
     if (!out) {
@@ -20,8 +33,8 @@ bool load_roster(const std::string& path, std::vector<Mech>& roster, int& skippe
     if (!in) {
         return false;
     }
-    roster.clear();
-    skipped_lines = 0;
+    std::vector<Mech> loaded;
+    int skipped = 0;
     std::string line;
     while (std::getline(in, line)) {
         std::istringstream fields(line);
@@ -29,23 +42,29 @@ bool load_roster(const std::string& path, std::vector<Mech>& roster, int& skippe
         std::string hp_text;
         std::string attack_text;
         std::string armor_text;
-        std::getline(fields, name, ',');
-        std::getline(fields, hp_text, ',');
-        std::getline(fields, attack_text, ',');
-        std::getline(fields, armor_text, ',');
-
         int hp = 0;
         int attack = 0;
         int armor = 0;
-        std::istringstream hp_in(hp_text);
-        std::istringstream attack_in(attack_text);
-        std::istringstream armor_in(armor_text);
-        if (hp_in >> hp && attack_in >> attack && armor_in >> armor) {
-            roster.push_back(Mech(name, hp, attack, armor));
+
+        bool valid = std::getline(fields, name, ',') &&
+                     std::getline(fields, hp_text, ',') &&
+                     std::getline(fields, attack_text, ',') &&
+                     std::getline(fields, armor_text, ',') &&
+                     fields.eof() &&
+                     !name.empty() &&
+                     read_whole_number(hp_text, hp) &&
+                     read_whole_number(attack_text, attack) &&
+                     read_whole_number(armor_text, armor) &&
+                     hp >= 1 && attack >= 0 && armor >= 0;
+
+        if (valid) {
+            loaded.push_back(Mech(name, hp, attack, armor));
         } else {
-            ++skipped_lines;
+            ++skipped;
         }
     }
+    roster = loaded;
+    skipped_lines = skipped;
     return true;
 }
 
