@@ -68,8 +68,11 @@ bool load_roster(const std::string& path, std::vector<Mech>& roster, int& skippe
     return true;
 }
 
-// TODO (Checkpoint 4): implement append_line.
-bool append_line([[maybe_unused]] const std::string& path,
-                 [[maybe_unused]] const std::string& text) {
-    return false;
+bool append_line(const std::string& path, const std::string& text) {
+    std::ofstream out(path, std::ios::app);
+    if (!out) {
+        return false;
+    }
+    out << text << "\n";
+    return static_cast<bool>(out);
 }

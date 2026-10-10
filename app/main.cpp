@@ -115,12 +115,19 @@ int main() {
             DuelResult result = simulate_duel(fighter, challenger);
             std::cout << result.summary << '\n';
 
-            // TODO (Checkpoint 4a): append a line to battle_log_path made of
-            // timestamp(), a space, and result.summary.
+            if (!append_line(battle_log_path, timestamp() + " " + result.summary)) {
+                std::cout << "Could not write to the battle log.\n";
+            }
 
-            // TODO (Checkpoint 4b): if the fighter was destroyed, append a line to
-            // graveyard_path saying who was destroyed and by whom, then remove the
-            // fighter from the roster. (Do not use fighter after removing it.)
+            if (fighter.is_destroyed()) {
+                std::string epitaph = timestamp() + " " + fighter.name() +
+                                      " was destroyed by " + result.opponent_name;
+                if (!append_line(graveyard_path, epitaph)) {
+                    std::cout << "Could not write to the graveyard.\n";
+                }
+                std::cout << fighter.name() << " has been sent to the graveyard.\n";
+                roster.erase(roster.begin() + (index - 1));
+            }
 
         } else {
             // TODO (Stretch): ask whether to save the roster before quitting.
