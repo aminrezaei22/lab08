@@ -64,7 +64,10 @@ int main() {
     roster.push_back(make_random_mech());
     roster.push_back(make_random_mech());
 
-    // STRETCH: try to load roster_path here, before the menu starts.
+    int loaded_skipped = 0;
+    if (load_roster(roster_path, roster, loaded_skipped)) {
+        std::cout << "Loaded " << roster.size() << " mechs from " << roster_path << ".\n";
+    }
 
     while (true) {
         print_menu();
@@ -130,7 +133,16 @@ int main() {
             }
 
         } else {
-            // TODO (Stretch): ask whether to save the roster before quitting.
+            std::cout << "Save the roster before quitting? (y/n) ";
+            std::string answer;
+            if (std::getline(std::cin, answer) && !answer.empty() &&
+                (answer[0] == 'y' || answer[0] == 'Y')) {
+                if (save_roster(roster, roster_path)) {
+                    std::cout << "Roster saved.\n";
+                } else {
+                    std::cout << "Could not save the roster to " << roster_path << ".\n";
+                }
+            }
             break;
         }
     }
